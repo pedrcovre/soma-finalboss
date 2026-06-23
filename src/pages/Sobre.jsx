@@ -37,24 +37,29 @@ const HOW_IT_WORKS = [
 
 const TEAM = [
   {
-    name: 'Lucas Ferreira', role: 'Fundador & Nutricionista Esportivo',
-    text: 'Praticante de musculação há 12 anos. Criou o SOMA após se frustrar com reviews pagos e comparações desonestas.',
-    // IMAGE: foto de perfil de Lucas Ferreira – trocar pela foto real do membro da equipe
-    img: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=300&q=80',
+    name: 'Matheus Kilpp Nogueira',
+    role: 'Tech Lead',
+    text: 'Responsável pela arquitetura do sistema, do scraping à API, e pela integração entre frontend e backend.',
+    img: '/team/matheus.jpg',  // colocar em: public/team/matheus.jpg
   },
   {
-    name: 'Mariana Costa', role: 'Especialista em Ciências do Esporte',
-    text: 'Mestre em Ciências do Esporte pela USP. Responsável pela metodologia de análise de composição e eficácia.',
-    // IMAGE: foto de perfil de Mariana Costa – trocar pela foto real da membro da equipe
-    img: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&q=80',
+    name: 'Bernardo Hamilton',
+    role: 'Engenheiro de Dados',
+    text: 'Cuida da coleta, modelagem e qualidade dos dados de produtos extraídos das lojas.',
+    img: '/team/bernardo.jpg', // colocar em: public/team/bernardo.jpg
   },
   {
-    name: 'Rafael Souza', role: 'Tech Lead & Engenheiro de Dados',
-    text: 'Desenvolvedor apaixonado por esportes. Construiu a infraestrutura para que a comparação seja sempre precisa.',
-    // IMAGE: foto de perfil de Rafael Souza – trocar pela foto real do membro da equipe
-    img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80',
+    name: 'Pedro Covre',
+    role: 'Design',
+    text: 'Responsável pela identidade visual e pela experiência de uso da plataforma.',
+    img: '/team/pedro.jpg',    // colocar em: public/team/pedro.jpg
   },
 ]
+
+// Iniciais para o placeholder quando a foto ainda não existe
+function initials(name) {
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('')
+}
 
 const STATS = [
   { num: '12+',  label: 'Marcas analisadas'    },
@@ -69,17 +74,16 @@ export default function Sobre() {
 
       {/* HERO */}
       <section className="relative h-[60vh] flex items-end overflow-hidden">
-        {/* IMAGE: Foto de academia ou atleta treinando – hero da página Sobre */}
+        {/* IMAGE: colocar em public/sobre.jpg – fallback mantém layout enquanto o arquivo não existe */}
         <img
-          src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1600&q=85"
+          src="/sobre.jpg"
           alt="Sobre o SOMA"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={e => { e.currentTarget.src = 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1600&q=85' }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/88 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <div className="relative z-10 px-14 pb-14 max-w-[640px]">
-          <span className="inline-block font-body text-[11px] font-bold tracking-[3px] uppercase text-orange border border-orange/60 px-4 py-1.5 rounded-pill mb-5">
-            Nossa História
-          </span>
           <h1 className="font-display text-[clamp(48px,6vw,88px)] leading-none uppercase tracking-wide text-white mb-4">
             Inteligência<br />
             <span className="text-orange">antes do</span><br />
@@ -105,7 +109,7 @@ export default function Sobre() {
       </div>
 
       {/* MISSÃO */}
-      <section className="px-14 py-20 bg-white">
+      <section className="px-14 py-20 bg-white" data-navtheme="light">
         <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row gap-16 items-center">
           {/* IMAGE: Foto de academia, laboratório ou análise – seção missão */}
           <div className="w-full md:w-[420px] flex-shrink-0 aspect-[4/3] rounded-card overflow-hidden">
@@ -163,13 +167,13 @@ export default function Sobre() {
       </section>
 
       {/* MARCAS */}
-      <section className="px-14 py-20 bg-soma-gray">
+      <section className="px-14 py-20 bg-soma-gray" data-navtheme="light">
         <div className="text-center mb-12">
           <span className="font-body text-[11px] font-bold tracking-[3px] uppercase text-orange mb-3 block">Marcas</span>
           <h2 className="font-display text-[clamp(36px,4vw,58px)] leading-none uppercase tracking-wide text-soma-black">
             Quem Nós Comparamos
           </h2>
-          <p className="font-body text-[14px] text-soma-textgray mt-3 max-w-[480px] mx-auto leading-relaxed">
+          <p className="font-body text-[14px] text-soma-textdark mt-3 max-w-[480px] mx-auto leading-relaxed">
             Analisamos as principais marcas nacionais de suplementos. Novos players são adicionados periodicamente.
           </p>
         </div>
@@ -182,7 +186,7 @@ export default function Sobre() {
               </div>
               <div className="p-5">
                 <p className="font-body text-[14px] font-bold text-soma-black mb-1.5">{b.name}</p>
-                <p className="font-body text-[12px] text-soma-textgray leading-relaxed">{b.desc}</p>
+                <p className="font-body text-[12px] text-soma-textdark leading-relaxed">{b.desc}</p>
               </div>
             </div>
           ))}
@@ -190,7 +194,7 @@ export default function Sobre() {
       </section>
 
       {/* EQUIPE */}
-      <section className="px-14 py-20 bg-white">
+      <section className="px-14 py-20 bg-white" data-navtheme="light">
         <div className="text-center mb-14">
           <span className="font-body text-[11px] font-bold tracking-[3px] uppercase text-orange mb-3 block">Equipe</span>
           <h2 className="font-display text-[clamp(36px,4vw,58px)] leading-none uppercase tracking-wide text-soma-black">
@@ -200,13 +204,21 @@ export default function Sobre() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-[960px] mx-auto">
           {TEAM.map(m => (
             <div key={m.name} className="text-center">
-              <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-4 border-soma-gray">
-                {/* IMAGE: foto de {m.name} – trocar pela foto real */}
-                <img src={m.img} alt={m.name} className="w-full h-full object-cover" />
+              {/* Avatar: foto local ou placeholder com iniciais se o arquivo ainda não existe */}
+              <div className="relative w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-4 border-soma-gray bg-soma-midgray flex items-center justify-center">
+                <span className="font-body text-[22px] font-bold text-soma-textdark select-none pointer-events-none absolute">
+                  {initials(m.name)}
+                </span>
+                <img
+                  src={m.img}
+                  alt={m.name}
+                  className="w-full h-full object-cover absolute inset-0"
+                  onError={e => { e.currentTarget.style.display = 'none' }}
+                />
               </div>
               <p className="font-body text-[16px] font-bold text-soma-black">{m.name}</p>
               <p className="font-body text-[12px] text-orange font-semibold tracking-wide mb-3">{m.role}</p>
-              <p className="font-body text-[13px] text-soma-textgray leading-relaxed">{m.text}</p>
+              <p className="font-body text-[13px] text-soma-textdark leading-relaxed">{m.text}</p>
             </div>
           ))}
         </div>

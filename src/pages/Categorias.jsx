@@ -1,7 +1,21 @@
 import { useState, useMemo } from 'react'
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react'
-import { products, BRANDS, CATEGORIES, GOALS } from '../data/products'
+import { BRANDS, CATEGORIES, GOALS } from '../data/products'
+import { useProducts, useCompareCategory } from '../hooks/useProducts'
 import ProductCard from '../components/ProductCard'
+
+function ProductSkeleton() {
+  return (
+    <div className='animate-pulse bg-soma-gray rounded-card overflow-hidden'>
+      <div className='aspect-square bg-soma-midgray' />
+      <div className='px-4 py-3.5 space-y-2'>
+        <div className='h-3 bg-soma-midgray rounded w-2/3' />
+        <div className='h-4 bg-soma-midgray rounded w-full' />
+        <div className='h-3 bg-soma-midgray rounded w-1/3' />
+      </div>
+    </div>
+  )
+}
 
 const SORT_OPTIONS = [
   { value: 'rating',    label: 'Melhor Avaliado' },
@@ -47,7 +61,7 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
             Filtros
           </h3>
           {hasActive ? (
-            <button onClick={onClear} className="font-body text-[11px] text-soma-textgray hover:text-orange flex items-center gap-1">
+            <button onClick={onClear} className="font-body text-[11px] text-soma-textdark hover:text-orange flex items-center gap-1">
               <X size={12} /> Limpar
             </button>
           ) : null}
@@ -55,12 +69,12 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
 
         {/* Objective filter */}
         <div className="mb-6">
-          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textgray mb-3">
+          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textdark mb-3">
             Objetivo
           </p>
           <div className="flex flex-col gap-2">
             {goals.map(g => (
-              <label key={g.id} className="flex items-center gap-2.5 cursor-pointer group">
+              <label key={g.id} onClick={() => toggleGoal(g.id)} className="flex items-center gap-2.5 cursor-pointer group">
                 <span className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                   activeGoals.includes(g.id) ? 'bg-orange border-orange' : 'border-soma-midgray group-hover:border-orange'
                 }`}>
@@ -68,10 +82,7 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
                     <svg width="9" height="7" fill="none" viewBox="0 0 9 7"><path d="M1 3L3.5 5.5L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   )}
                 </span>
-                <span
-                  onClick={() => toggleGoal(g.id)}
-                  className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none"
-                >
+                <span className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none">
                   {g.emoji} {g.label}
                 </span>
               </label>
@@ -81,12 +92,12 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
 
         {/* Category filter */}
         <div className="mb-6">
-          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textgray mb-3">
+          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textdark mb-3">
             Categoria
           </p>
           <div className="flex flex-col gap-2">
             {cats.map(c => (
-              <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
+              <label key={c} onClick={() => toggleCat(c)} className="flex items-center gap-2.5 cursor-pointer group">
                 <span className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                   activeCats.includes(c) ? 'bg-orange border-orange' : 'border-soma-midgray group-hover:border-orange'
                 }`}>
@@ -94,10 +105,7 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
                     <svg width="9" height="7" fill="none" viewBox="0 0 9 7"><path d="M1 3L3.5 5.5L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   )}
                 </span>
-                <span
-                  onClick={() => toggleCat(c)}
-                  className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none"
-                >
+                <span className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none">
                   {c}
                 </span>
               </label>
@@ -107,12 +115,12 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
 
         {/* Brand filter */}
         <div className="mb-6">
-          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textgray mb-3">
+          <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textdark mb-3">
             Marca
           </p>
           <div className="flex flex-col gap-2">
             {brands.map(b => (
-              <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
+              <label key={b} onClick={() => toggleBrand(b)} className="flex items-center gap-2.5 cursor-pointer group">
                 <span className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                   activeBrands.includes(b) ? 'bg-orange border-orange' : 'border-soma-midgray group-hover:border-orange'
                 }`}>
@@ -120,10 +128,7 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
                     <svg width="9" height="7" fill="none" viewBox="0 0 9 7"><path d="M1 3L3.5 5.5L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   )}
                 </span>
-                <span
-                  onClick={() => toggleBrand(b)}
-                  className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none"
-                >
+                <span className="font-body text-[13px] text-soma-dark group-hover:text-orange transition-colors select-none">
                   {b}
                 </span>
               </label>
@@ -136,6 +141,7 @@ function Sidebar({ cats, brands, goals, activeCats, activeBrands, activeGoals, t
 }
 
 export default function Categorias({ openModal }) {
+  const { data: allProducts, loading, error } = useProducts()
   const [activeCats,   setActiveCats]   = useState([])
   const [activeBrands, setActiveBrands] = useState([])
   const [activeGoals,  setActiveGoals]  = useState([])
@@ -143,8 +149,22 @@ export default function Categorias({ openModal }) {
 
   const toggle = (set, val) => set(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
 
+  // Compare data for the selected category (only when exactly one cat is active)
+  const activeCat = activeCats.length === 1 ? activeCats[0] : null
+  const { data: compareData, loading: compareLoading } = useCompareCategory(activeCat)
+
+  // Cheapest product id from compare — used to inject badge into the card
+  const cheapestId = compareData?.cheapest?.id
+
+  // Augment product with "Melhor Preço" badge when it is isCheapest and has no badge
+  const withBadge = p => {
+    if (p.badge) return p
+    if (cheapestId && p.id === cheapestId) return { ...p, badge: 'Melhor Preço' }
+    return p
+  }
+
   const filtered = useMemo(() => {
-    let list = [...products]
+    let list = [...allProducts]
     if (activeCats.length)   list = list.filter(p => activeCats.includes(p.category))
     if (activeBrands.length) list = list.filter(p => activeBrands.includes(p.brand))
     if (activeGoals.length)  list = list.filter(p => p.goals.some(g => activeGoals.includes(g)))
@@ -155,7 +175,7 @@ export default function Categorias({ openModal }) {
       default:          list.sort((a, b) => b.rating - a.rating); break
     }
     return list
-  }, [activeCats, activeBrands, activeGoals, sort])
+  }, [allProducts, activeCats, activeBrands, activeGoals, sort])
 
   // Current banner: first active category or default
   const bannerCat = activeCats[0] || 'Proteínas'
@@ -181,9 +201,9 @@ export default function Categorias({ openModal }) {
       </div>
 
       {/* Quick filter chips (horizontal scroll) */}
-      <div className="bg-soma-gray border-b border-soma-midgray">
+      <div className="bg-soma-gray border-b border-soma-midgray" data-navtheme="light">
         <div className="px-14 py-3 flex gap-2 overflow-x-auto no-scrollbar">
-          <span className="font-body text-[11px] font-bold tracking-wide uppercase text-soma-textgray flex items-center mr-2 whitespace-nowrap">
+          <span className="font-body text-[11px] font-bold tracking-wide uppercase text-soma-textdark flex items-center mr-2 whitespace-nowrap">
             Objetivo:
           </span>
           {GOALS.map(g => (
@@ -198,7 +218,7 @@ export default function Categorias({ openModal }) {
       </div>
 
       {/* Main layout */}
-      <div className="px-14 py-10 flex gap-10">
+      <div className="px-14 py-10 flex gap-10" data-navtheme="light">
         {/* Sidebar */}
         <Sidebar
           cats={CATEGORIES}
@@ -217,11 +237,11 @@ export default function Categorias({ openModal }) {
         <div className="flex-1 min-w-0">
           {/* Toolbar */}
           <div className="flex items-center justify-between mb-6">
-            <p className="font-body text-[14px] text-soma-textgray">
+            <p className="font-body text-[14px] text-soma-textdark">
               <span className="font-bold text-soma-black">{filtered.length}</span> produtos encontrados
             </p>
             <div className="flex items-center gap-2">
-              <span className="font-body text-[12px] text-soma-textgray">Ordenar por:</span>
+              <span className="font-body text-[12px] text-soma-textdark">Ordenar por:</span>
               <select
                 value={sort}
                 onChange={e => setSort(e.target.value)}
@@ -234,11 +254,59 @@ export default function Categorias({ openModal }) {
             </div>
           </div>
 
+          {/* Comparison highlight — shown when exactly one category is selected */}
+          {activeCat && (
+            compareLoading ? (
+              <div className="animate-pulse bg-soma-gray rounded-xl p-5 mb-6 h-16" />
+            ) : compareData ? (
+              <div className="bg-soma-gray rounded-xl p-5 mb-6 flex items-center gap-4 flex-wrap">
+                {compareData.singleStore ? (
+                  <p className="font-body text-[13px] text-soma-textdark">
+                    Ainda sem concorrentes para comparar nesta categoria.
+                  </p>
+                ) : compareData.cheapest ? (
+                  <>
+                    <div className="min-w-0">
+                      <p className="font-body text-[11px] font-bold tracking-[2px] uppercase text-soma-textdark mb-0.5">
+                        Melhor custo-benefício
+                      </p>
+                      <p className="font-body text-[14px] font-semibold text-soma-black truncate">
+                        {compareData.cheapest.name}
+                        <span className="text-orange ml-2">
+                          R${compareData.cheapest.price.toFixed(2).replace('.', ',')}
+                        </span>
+                      </p>
+                    </div>
+                    {compareData.savings && (
+                      /* Same badge classes as ProductCard badge */
+                      <span className="ml-auto font-body text-[10px] font-bold tracking-widest uppercase bg-orange text-white px-3 py-1 rounded-pill whitespace-nowrap flex-shrink-0">
+                        Economize R${compareData.savings.toFixed(2).replace('.', ',')} ({compareData.savingsPercent}%)
+                      </span>
+                    )}
+                  </>
+                ) : null}
+              </div>
+            ) : null
+          )}
+
           {/* Products grid */}
-          {filtered.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => <ProductSkeleton key={i} />)}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <p className="font-body text-[16px] font-semibold text-soma-dark mb-2">
+                Não foi possível carregar os produtos
+              </p>
+              <p className="font-body text-[14px] text-soma-textdark">
+                Verifique sua conexão e tente novamente.
+              </p>
+            </div>
+          ) : filtered.length > 0 ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
               {filtered.map(p => (
-                <ProductCard key={p.id} product={p} onOpen={openModal} />
+                <ProductCard key={p.id} product={withBadge(p)} onOpen={openModal} />
               ))}
             </div>
           ) : (
@@ -247,7 +315,7 @@ export default function Categorias({ openModal }) {
               <p className="font-body text-[16px] font-semibold text-soma-dark mb-2">
                 Nenhum produto encontrado
               </p>
-              <p className="font-body text-[14px] text-soma-textgray">
+              <p className="font-body text-[14px] text-soma-textdark">
                 Tente ajustar os filtros para ver mais opções.
               </p>
             </div>

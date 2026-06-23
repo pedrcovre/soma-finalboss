@@ -1,0 +1,29 @@
+{
+  "name": "soma-backend",
+  "version": "1.0.0",
+  "description": "SOMA – API de comparação de suplementos",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/seed/seed.js",
+    "scrape:growth": "node src/scrapers/growth.js",
+    "scrape:max":       "node src/scrapers/maxtitanium.js",
+    "scrape:essential": "node src/scrapers/essential.js",
+    "scrape:darklab":   "node src/scrapers/darklab.js",
+    "scrape:all":       "node src/scrapers/index.js",
+    "scheduler":        "node src/scheduler.js"
+  },
+  "dependencies": {
+    "axios": "^1.18.1",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0"
+  }
+}

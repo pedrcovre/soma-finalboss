@@ -8,8 +8,22 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { useCountdown } from '../hooks/useCountdown'
-import { bestSellers, weeklyDeals, GOALS } from '../data/products'
+import { useBestSellers, useDeals } from '../hooks/useProducts'
+import { GOALS } from '../data/products'
 import ProductCard from '../components/ProductCard'
+
+function ProductSkeleton() {
+  return (
+    <div className='animate-pulse bg-soma-gray rounded-card overflow-hidden'>
+      <div className='aspect-square bg-soma-midgray' />
+      <div className='px-4 py-3.5 space-y-2'>
+        <div className='h-3 bg-soma-midgray rounded w-2/3' />
+        <div className='h-4 bg-soma-midgray rounded w-full' />
+        <div className='h-3 bg-soma-midgray rounded w-1/3' />
+      </div>
+    </div>
+  )
+}
 
 // Countdown target: próxima segunda às 00:00
 const OFFER_END = (() => {
@@ -102,7 +116,7 @@ const GOAL_IMAGES = {
   }
 }
 
-function Jornada ({ onGoalSelect }) {
+function Jornada () {
   return (
     <section className='bg-soma-black py-24 px-14'>
       {/* Header */}
@@ -127,18 +141,13 @@ function Jornada ({ onGoalSelect }) {
 
       {/* Cards grid */}
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-5'>
-        {GOALS.map((goal, i) => {
+        {GOALS.map((goal) => {
           const extra = GOAL_IMAGES[goal.id]
-          const featured = goal.id === 'hipertrofia'
           return (
-            <div
+            <Link
               key={goal.id}
-              onClick={() => onGoalSelect(goal.id)}
-              className={`relative rounded-card overflow-hidden cursor-pointer group flex flex-col transition-all duration-300 ${
-                featured
-                  ? 'bg-soma-dark hover:-translate-y-2 hover:border-orange/20 border border-transparent'
-                  : 'bg-soma-dark hover:-translate-y-2 hover:border-orange/20 border border-transparent'
-              }`}
+              to={`/objetivo/${goal.id}`}
+              className='relative rounded-card overflow-hidden cursor-pointer group flex flex-col transition-all duration-300 bg-soma-dark hover:-translate-y-2 hover:border-orange/20 border border-transparent no-underline'
             >
               {/* Image */}
               <div className='aspect-square overflow-hidden'>
@@ -157,21 +166,12 @@ function Jornada ({ onGoalSelect }) {
                 <p className='font-body text-[12px] text-white/50 leading-relaxed'>
                   {extra.suplementos}
                 </p>
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    onGoalSelect(goal.id)
-                  }}
-                  className={`mt-auto font-body text-[11px] font-bold tracking-[2px] uppercase border px-5 py-2 rounded-pill transition-all w-fit ${
-                    featured
-                      ? 'border-white/20 text-white hover:bg-orange hover:border-orange'
-                      : 'border-white/20 text-white hover:bg-orange hover:border-orange'
-                  }`}
-                >
+                {/* span instead of button — entire card is a Link */}
+                <span className='mt-auto font-body text-[11px] font-bold tracking-[2px] uppercase border border-white/20 text-white hover:bg-orange hover:border-orange px-5 py-2 rounded-pill transition-all w-fit'>
                   Acesse
-                </button>
+                </span>
               </div>
-            </div>
+            </Link>
           )
         })}
       </div>
@@ -179,67 +179,87 @@ function Jornada ({ onGoalSelect }) {
   )
 }
 
-// ── Section: Oferta da semana ──────────────────────────────
+// ── Section: Oferta da semana / Mais Bem Avaliados ────────────
+// Title and content adapt to /api/deals `mode` field:
+//   mode "deals"    → real price drops, shows countdown + discount badge
+//   mode "topRated" → fallback top-rated products, shows rating badge
 function OfertaSemana () {
   const { days, hours, mins, secs } = useCountdown(OFFER_END)
-  const deal = weeklyDeals[0]
+  const { mode, items } = useDeals()
+  const deal    = items[0]
+  const isDeals = mode === 'deals'
 
   const pad = n => String(n).padStart(2, '0')
   const units = [
-    { val: pad(days), label: 'Dias' },
-    { val: pad(hours), label: 'Horas' },
-    { val: pad(mins), label: 'Minutos' },
-    { val: pad(secs), label: 'Segundos' }
+    { val: pad(days),  label: 'Dias'     },
+    { val: pad(hours), label: 'Horas'    },
+    { val: pad(mins),  label: 'Minutos'  },
+    { val: pad(secs),  label: 'Segundos' },
   ]
 
   return (
     <section className='bg-orange flex flex-col md:flex-row items-center gap-12 px-14 py-20'>
-      {/* IMAGE: Imagem do produto em destaque da semana – Whey ou suplemento */}
-      <div className='w-56 h-56 rounded-card overflow-hidden flex-shrink-0 shadow-[0_24px_60px_rgba(0,0,0,.2)]'>
+      {/* Product image — badge overlaid using the same classes as ProductCard badge */}
+      <div className='relative w-56 h-56 rounded-card overflow-hidden flex-shrink-0 shadow-[0_24px_60px_rgba(0,0,0,.2)]'>
         <img
           src={deal?.img}
           alt={deal?.name}
           className='w-full h-full object-cover'
         />
+        {/* Discount badge — same classes as ProductCard badge (absolute bottom-3 left-3, bg-orange text-white, rounded-pill) */}
+        {isDeals && deal?.discountPercent > 0 && (
+          <span className='absolute bottom-3 left-3 font-body text-[10px] font-bold tracking-widest uppercase bg-orange text-white px-3 py-1 rounded-pill'>
+            -{Math.round(deal.discountPercent)}%
+          </span>
+        )}
+        {/* Rating badge — same pill classes, shown in topRated mode */}
+        {!isDeals && deal?.rating > 0 && (
+          <span className='absolute bottom-3 left-3 font-body text-[10px] font-bold tracking-widest uppercase bg-orange text-white px-3 py-1 rounded-pill'>
+            ★ {deal.rating} ({deal.reviews})
+          </span>
+        )}
       </div>
 
       <div className='flex-1'>
-        {/* Countdown */}
-        <div className='inline-flex items-center gap-1 bg-white rounded-xl px-6 py-3.5 mb-8 shadow-md'>
-          {units.map((u, i) => (
-            <div key={u.label} className='flex items-center gap-1'>
-              <div className='text-center px-2'>
-                <p className='font-display text-[40px] leading-none text-soma-black'>
-                  {u.val}
-                </p>
-                <p className='font-body text-[9px] font-bold tracking-[1.5px] uppercase text-soma-textgray'>
-                  {u.label}
-                </p>
+        {/* Countdown — only meaningful in deals mode */}
+        {isDeals && (
+          <div className='inline-flex items-center gap-1 bg-white rounded-xl px-6 py-3.5 mb-8 shadow-md'>
+            {units.map((u, i) => (
+              <div key={u.label} className='flex items-center gap-1'>
+                <div className='text-center px-2'>
+                  <p className='font-display text-[40px] leading-none text-soma-black'>
+                    {u.val}
+                  </p>
+                  <p className='font-body text-[9px] font-bold tracking-[1.5px] uppercase text-soma-textdark'>
+                    {u.label}
+                  </p>
+                </div>
+                {i < 3 && (
+                  <span className='font-display text-[32px] text-soma-black/20 pb-3'>
+                    :
+                  </span>
+                )}
               </div>
-              {i < 3 && (
-                <span className='font-display text-[32px] text-soma-black/20 pb-3'>
-                  :
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
+        {/* Title — same heading classes, text changes with mode */}
         <h2 className='font-display text-[clamp(42px,5vw,72px)] leading-none uppercase text-white mb-4'>
-          Ofertas
-          <br />
-          da Semana
+          {isDeals ? (<>Ofertas<br />da Semana</>) : (<>Melhor<br />Avaliados</>)}
         </h2>
+
         <p className='font-body text-[15px] leading-relaxed text-white/85 max-w-[480px] mb-8'>
-          Encontre os melhores suplementos nacionais com os melhores preços do
-          mercado esta semana. Comparamos qualidade e custo-benefício para você
-          não errar na hora de comprar.
+          {isDeals
+            ? 'Encontre os melhores suplementos nacionais com os melhores preços do mercado esta semana. Comparamos qualidade e custo-benefício para você não errar na hora de comprar.'
+            : 'Os suplementos com melhor avaliação real pelos consumidores. Qualidade comprovada por quem já usou — escolha com confiança.'}
         </p>
+
         <Link
           to='/ofertas'
           className='inline-flex items-center gap-2 font-body text-[13px] font-bold tracking-[2px] uppercase bg-white hover:bg-soma-black text-soma-black hover:text-white px-8 py-3.5 rounded-pill transition-colors no-underline'
         >
-          Ver Todas as Ofertas <ArrowRight size={15} />
+          {isDeals ? 'Ver Todas as Ofertas' : 'Ver Produtos'} <ArrowRight size={15} />
         </Link>
       </div>
     </section>
@@ -248,15 +268,17 @@ function OfertaSemana () {
 
 // ── Section: Mais Vendidos ─────────────────────────────────
 function MaisVendidos ({ openModal }) {
+  const { data: products, loading, error } = useBestSellers()
+
   return (
-    <section id='mais-vendidos' className='py-20 px-14 bg-white'>
+    <section id='mais-vendidos' className='py-20 px-14 bg-white' data-navtheme="light">
       <div className='flex items-center justify-between mb-10'>
         <div>
           <h2 className='font-display text-[clamp(36px,4.5vw,62px)] leading-none uppercase tracking-wide text-soma-black'>
             Mais Vendidos
           </h2>
-          <p className='font-body text-[13px] text-soma-textgray mt-1'>
-            (23) produtos disponíveis
+          <p className='font-body text-[13px] text-soma-textdark mt-1'>
+            {loading ? '…' : `(${products.length}) produtos disponíveis`}
           </p>
         </div>
         <Link
@@ -267,9 +289,12 @@ function MaisVendidos ({ openModal }) {
         </Link>
       </div>
       <div className='grid grid-cols-2 md:grid-cols-4 gap-5'>
-        {bestSellers.map(p => (
-          <ProductCard key={p.id} product={p} onOpen={openModal} />
-        ))}
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)
+          : error
+          ? <p className='col-span-4 font-body text-[14px] text-soma-textdark text-center py-8'>Não foi possível carregar os produtos.</p>
+          : products.map(p => <ProductCard key={p.id} product={p} onOpen={openModal} />)
+        }
       </div>
     </section>
   )
@@ -296,7 +321,7 @@ const FEATURES = [
 
 function PorQueSoma () {
   return (
-    <section id='sobre-strip' className='bg-soma-gray py-20 px-14'>
+    <section id='sobre-strip' className='bg-soma-gray py-20 px-14' data-navtheme="light">
       {/* Header */}
       <div className='flex flex-col md:flex-row justify-between items-start gap-6 mb-12'>
         <h2 className='font-display text-[clamp(36px,4vw,56px)] leading-none uppercase tracking-wide text-soma-black'>
@@ -385,7 +410,7 @@ const CAT_ITEMS = [
 
 function CategoriasPreview () {
   return (
-    <section className='py-20 px-14 bg-white'>
+    <section className='py-20 px-14 bg-white' data-navtheme="light">
       <div className='flex items-center justify-between mb-10'>
         <h2 className='font-display text-[clamp(36px,4.5vw,62px)] leading-none uppercase tracking-wide text-soma-black'>
           Categorias
@@ -427,15 +452,10 @@ function CategoriasPreview () {
 
 // ── Main Home component ─────────────────────────────────────
 export default function Home ({ openModal }) {
-  const handleGoalSelect = goalId => {
-    // Navigate to categorias with goal filter
-    window.location.hash = `/categorias?objetivo=${goalId}`
-  }
-
   return (
     <>
       <Hero />
-      <Jornada onGoalSelect={handleGoalSelect} />
+      <Jornada />
       <OfertaSemana />
       <MaisVendidos openModal={openModal} />
       <CategoriasPreview />

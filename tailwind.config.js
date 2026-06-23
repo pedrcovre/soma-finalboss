@@ -19,7 +19,8 @@ export default {
           card:     '#2b2b2b',
           gray:     '#f0f0f0',
           midgray:  '#e2e2e2',
-          textgray: '#888888',
+          textgray: '#b5b5bb',  // cinza claro — usar SOMENTE sobre fundos escuros
+          textdark: '#4b5563',  // cinza chumbo — usar sobre fundos claros/brancos (≥7:1 no branco)
         },
       },
       fontFamily: {

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ArrowRight, Tag, Flame, Clock } from 'lucide-react'
 import { useCountdown } from '../hooks/useCountdown'
-import { weeklyDeals, products } from '../data/products'
+import { useDeals, useProducts } from '../hooks/useProducts'
 import ProductCard from '../components/ProductCard'
 
 const OFFER_END = (() => {
@@ -11,21 +11,31 @@ const OFFER_END = (() => {
   return d
 })()
 
-const topRated  = [...products].sort((a, b) => b.rating - a.rating).slice(0, 8)
-const bestValue = [...products].sort((a, b) => a.price - b.price).slice(0, 8)
+function ProductSkeleton() {
+  return (
+    <div className='animate-pulse bg-soma-gray rounded-card overflow-hidden'>
+      <div className='aspect-square bg-soma-midgray' />
+      <div className='px-4 py-3.5 space-y-2'>
+        <div className='h-3 bg-soma-midgray rounded w-2/3' />
+        <div className='h-4 bg-soma-midgray rounded w-full' />
+        <div className='h-3 bg-soma-midgray rounded w-1/3' />
+      </div>
+    </div>
+  )
+}
 
 function CdUnit({ val, label }) {
   return (
     <div className="text-center">
       <div className="bg-white rounded-xl px-5 py-3 shadow-sm min-w-[68px]">
         <p className="font-display text-[44px] leading-none text-soma-black">{String(val).padStart(2,'0')}</p>
-        <p className="font-body text-[9px] font-bold tracking-[2px] uppercase text-soma-textgray mt-1">{label}</p>
+        <p className="font-body text-[9px] font-bold tracking-[2px] uppercase text-soma-textdark mt-1">{label}</p>
       </div>
     </div>
   )
 }
 
-function HeroBanner() {
+function HeroBanner({ firstDeal }) {
   const { days, hours, mins, secs } = useCountdown(OFFER_END)
   return (
     <section className="relative overflow-hidden bg-orange">
@@ -38,7 +48,9 @@ function HeroBanner() {
       <div className="relative z-10 px-14 py-20 flex flex-col md:flex-row items-center gap-12">
         {/* IMAGE: produto em destaque – Whey ou suplemento principal da semana */}
         <div className="w-52 h-52 rounded-card overflow-hidden flex-shrink-0 shadow-[0_24px_60px_rgba(0,0,0,.25)]">
-          <img src={weeklyDeals[0]?.img} alt={weeklyDeals[0]?.name} className="w-full h-full object-cover" />
+          {firstDeal && (
+            <img src={firstDeal.img} alt={firstDeal.name} className="w-full h-full object-cover" />
+          )}
         </div>
         <div className="flex-1">
           <span className="inline-flex items-center gap-2 font-body text-[11px] font-bold tracking-[3px] uppercase text-white bg-white/15 border border-white/30 px-4 py-1.5 rounded-pill mb-5">
@@ -110,15 +122,22 @@ const TABS = [
 
 export default function Ofertas({ openModal }) {
   const [tab, setTab] = useState('semana')
+  const { items: deals,      loading: loadingDeals,    error: errorDeals    } = useDeals()
+  const { data: allProducts, loading: loadingProducts, error: errorProducts } = useProducts()
 
-  const list = tab === 'avaliados' ? topRated : tab === 'baratos' ? bestValue : weeklyDeals
+  const topRated  = useMemo(() => [...allProducts].sort((a, b) => b.rating  - a.rating ).slice(0, 8), [allProducts])
+  const bestValue = useMemo(() => [...allProducts].sort((a, b) => a.price   - b.price  ).slice(0, 8), [allProducts])
+
+  const list    = tab === 'avaliados' ? topRated  : tab === 'baratos' ? bestValue : deals
+  const loading = tab === 'semana'    ? loadingDeals    : loadingProducts
+  const error   = tab === 'semana'    ? errorDeals      : errorProducts
 
   return (
     <div className="min-h-screen bg-white">
-      <HeroBanner />
+      <HeroBanner firstDeal={deals[0]} />
 
       {/* Destaques */}
-      <section className="px-14 py-16 bg-soma-gray">
+      <section className="px-14 py-16 bg-soma-gray" data-navtheme="light">
         <div className="mb-10">
           <span className="font-body text-[11px] font-bold tracking-[3px] uppercase text-orange mb-2 block">Em Destaque</span>
           <h2 className="font-display text-[clamp(32px,4vw,56px)] leading-none uppercase tracking-wide text-soma-black">
@@ -126,14 +145,17 @@ export default function Ofertas({ openModal }) {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {weeklyDeals.map(p => (
-            <DealHighlight key={p.id} product={p} onOpen={openModal} />
-          ))}
+          {loadingDeals
+            ? Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)
+            : errorDeals
+            ? <p className="col-span-4 font-body text-[14px] text-soma-textdark text-center py-8">Não foi possível carregar as ofertas.</p>
+            : deals.map(p => <DealHighlight key={p.id} product={p} onOpen={openModal} />)
+          }
         </div>
       </section>
 
       {/* Tabs + grid */}
-      <section className="px-14 py-16 bg-white">
+      <section className="px-14 py-16 bg-white" data-navtheme="light">
         <div className="flex gap-2 mb-10 border-b border-soma-midgray pb-4 overflow-x-auto no-scrollbar">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
@@ -151,9 +173,12 @@ export default function Ofertas({ openModal }) {
           ))}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {list.map(p => (
-            <ProductCard key={p.id} product={p} onOpen={openModal} />
-          ))}
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)
+            : error
+            ? <p className="col-span-4 font-body text-[14px] text-soma-textdark text-center py-8">Não foi possível carregar os produtos.</p>
+            : list.map(p => <ProductCard key={p.id} product={p} onOpen={openModal} />)
+          }
         </div>
       </section>
 

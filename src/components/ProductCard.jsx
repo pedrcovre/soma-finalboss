@@ -41,7 +41,7 @@ export default function ProductCard({ product, onOpen }) {
           className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all ${
             fav
               ? 'bg-orange text-white'
-              : 'bg-white text-soma-textgray hover:bg-orange hover:text-white'
+              : 'bg-white text-soma-textdark hover:bg-orange hover:text-white'
           }`}
         >
           <Heart size={15} fill={fav ? 'currentColor' : 'none'} />
@@ -67,24 +67,28 @@ export default function ProductCard({ product, onOpen }) {
       {/* Info */}
       <div className="px-4 py-3.5 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-body text-[11px] text-soma-textgray font-medium tracking-wide uppercase truncate">
+          <p className="font-body text-[11px] text-soma-textdark font-medium tracking-wide uppercase truncate">
             {product.brand}
           </p>
           <p className="font-body text-[14px] font-semibold text-soma-black leading-snug mt-0.5 truncate">
             {product.name}
           </p>
           {product.weight && (
-            <p className="font-body text-[11px] text-soma-textgray mt-0.5">{product.weight}</p>
+            <p className="font-body text-[11px] text-soma-textdark mt-0.5">{product.weight}</p>
           )}
         </div>
         <div className="text-right flex-shrink-0">
           <p className="font-body text-[15px] font-bold text-soma-black whitespace-nowrap">
             R${product.price.toFixed(2).replace('.', ',')}
           </p>
-          <div className="flex items-center gap-0.5 justify-end mt-0.5">
-            <span className="text-orange text-[12px]">★</span>
-            <span className="font-body text-[11px] text-soma-textgray">{product.rating}</span>
-          </div>
+          {product.hasRealRating ? (
+            <div className="flex items-center gap-0.5 justify-end mt-0.5">
+              <span className="text-orange text-[12px]">★</span>
+              <span className="font-body text-[11px] text-soma-textdark">{product.rating}</span>
+            </div>
+          ) : (
+            <p className="font-body text-[11px] text-soma-textdark mt-0.5">Sem avaliações</p>
+          )}
         </div>
       </div>
     </div>

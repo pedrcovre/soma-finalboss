@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Search, ArrowUpRight } from 'lucide-react'
-import { products } from '../data/products'
+import { useProducts } from '../hooks/useProducts'
 
 const HINTS = ['Whey Protein', 'Creatina', 'BCAA', 'Pré-treino', 'Growth', 'DarkLab', 'Essential', 'Termogênico', 'Ômega 3']
 
 export default function SearchOverlay({ open, onClose, onOpenModal }) {
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)
+  const { data: products } = useProducts()
 
   useEffect(() => {
     if (open) {

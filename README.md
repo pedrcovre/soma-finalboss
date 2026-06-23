@@ -41,6 +41,18 @@ Isso iniciará a aplicação localmente com Hot Module Replacement (HMR).
 npm run dev
 
 
+para rodar o scrapping 
+
+npm run scrape:(nome da loja)
+
+npm run scrape:darklab
+npm run scrape:essential
+npm run scrape:growth
+npm run scrape:max
+
+npm run scrape:all
+
+
 O servidor iniciará e informará a URL de acesso no terminal (geralmente http://localhost:5173).
 
 # Construindo para Produção

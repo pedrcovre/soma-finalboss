@@ -1,68 +1,115 @@
-# Soma
+SOMA — Comparador de Suplementos
 
-Este é o repositório do projeto Soma, um projeto web moderno construído com ferramentas de alta performance para garantir uma excelente experiência de desenvolvimento e otimização.
-
-# Tecnologias Utilizadas
-
-Este projeto foi construído utilizando as seguintes tecnologias e bibliotecas:
-
-Vite
-Tailwind CSS
-React
-
-# Pré-requisitos
-
-Antes de começar, certifique-se de ter o seguinte instalado:
-
-Node.js
-
-Gerenciador de pacotes: npm (vem com o Node.js) ou Yarn.
-
-# Como Instalar e Rodar Localmente
-
-Siga estes passos para configurar e rodar o projeto em sua máquina local:
-
-Clone ou acesse o diretório do projeto:
-
-git clone <URL_DO_REPOSITORIO>
-cd soma-finalboss-main
+O SOMA é um comparador de preços de suplementos nacionais. Ele coleta produtos
+reais de várias lojas via web scraping, salva no banco, compara preços de forma
+imparcial e redireciona o usuário para o site oficial da marca.
 
 
-# Instale as dependências:
+Não é uma loja — é um comparador. Não vendemos nada: agregamos, comparamos e
+redirecionamos (modelo Buscapé / Google Shopping).
 
+
+
+
+Funcionalidades
+
+
+Web scraping de 4 lojas reais (Growth, Max Titanium, Essential, DarkLab),
+cada uma com a técnica adequada à sua proteção anti-bot.
+Comparação de preço por grama (não por preço absoluto) — uma comparação justa
+entre tamanhos diferentes.
+Redirecionamento para a loja com rastreamento de cliques de saída.
+Ofertas reais calculadas a partir do histórico de preços (queda de preço).
+Páginas por objetivo (hipertrofia, emagrecimento, saúde, energia) com
+produtos recomendados.
+Tratamento honesto de avaliações: "Sem avaliações" em vez de "0 estrelas"
+quando a loja não expõe rating.
+
+
+
+Stack
+
+Frontend: React 18 · Vite · Tailwind CSS · React Router
+Backend: Node.js · Express · Mongoose
+Banco: MongoDB Atlas
+Scraping: Playwright (sites com anti-bot) · axios + cheerio (sites abertos)
+
+
+Arquitetura
+
+Scraper  →  MongoDB  →  API REST  →  Frontend (React)
+(coleta)    (armazena)  (serve)      (exibe)
+
+O scraper coleta os produtos das lojas e salva no MongoDB (upsert por SKU, sem
+duplicar). A API REST serve esses dados, e o front consome via hooks, exibindo
+catálogo, comparações e ofertas.
+
+
+Como rodar
+
+Pré-requisitos
+
+
+Node.js 18+
+Uma string de conexão do MongoDB Atlas
+
+
+Backend
+
+bashcd soma-backend
 npm install
+cp .env.example .env      # edite o .env com sua MONGODB_URI
+npm run seed              # popula o banco (fallback inicial)
+npm run dev               # API em http://localhost:4000
 
-Configure as variáveis de ambiente:
-Se necessário, crie ou configure o arquivo .env na raiz do projeto com as chaves apropriadas.
+Frontend
 
-Inicie o servidor de desenvolvimento:
-Isso iniciará a aplicação localmente com Hot Module Replacement (HMR).
-
-npm run dev
-
-
-para rodar o scrapping 
-
-npm run scrape:(nome da loja)
-
-npm run scrape:darklab
-npm run scrape:essential
-npm run scrape:growth
-npm run scrape:max
-
-npm run scrape:all
+bashnpm install
+npm run dev               # site em http://localhost:5173
 
 
-O servidor iniciará e informará a URL de acesso no terminal (geralmente http://localhost:5173).
+Defina VITE_API_URL=http://localhost:4000/api no .env do front.
 
-# Construindo para Produção
 
-Quando estiver pronto para o deploy, gere os arquivos estáticos otimizados:
 
-npm run build
 
-Os arquivos prontos para produção serão gerados dentro da pasta dist/.
+Web Scraping
 
-# Licença
+Cada loja exigiu uma abordagem diferente:
 
-Este projeto está sob a licença MIT. Sinta-se à vontade para utilizar, modificar e contribuir.
+LojaProteçãoFerramentaVelocidadeGrowthChallenge NOCPlaywrightLentaMax TitaniumCloudflarePlaywrightLentaEssentialNenhumaaxios + cheerioRápidaDarkLabNenhumaaxios + cheerioRápida
+
+A extração prioriza JSON-LD (dados estruturados embutidos nas páginas), mais
+estável que ler o HTML diretamente.
+
+Comandos
+
+bashcd soma-backend
+npm run scrape:essential   # rápido (segundos)
+npm run scrape:darklab     # rápido
+npm run scrape:growth      # lento (Playwright)
+npm run scrape:max         # lento (Playwright)
+npm run scrape:all         # todas em sequência
+
+O scraper faz upsert por SKU: re-executar atualiza os produtos e registra
+o histórico de preços, sem duplicar (saída "0 inseridos, X atualizados" é o
+comportamento correto).
+
+
+API — principais rotas
+
+MétodoRotaDescriçãoGET/api/productslista com filtros e ordenaçãoGET/api/products/:iddetalhe de um produtoGET/api/dealsofertas (ou mais avaliados)GET/api/comparecomparação de preços por categoriaPOST/api/products/:id/clickregistra clique de saída
+
+
+Boas práticas de scraping
+
+Respeitamos o robots.txt de cada loja e aplicamos um intervalo entre requisições
+para não sobrecarregar os servidores. O uso é acadêmico, para comparação de preços.
+
+
+Equipe
+
+
+Matheus Kilpp Nogueira — Tech Lead
+Bernardo Hamilton — Engenheiro de Dados
+Pedro Covre — Design
